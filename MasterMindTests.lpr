@@ -3,7 +3,9 @@ program MasterMindTests;
 {$mode objfpc}{$H+}
 
 uses
-  HeapTrc, Classes, consoletestrunner, MasterMind.Evaluator.Tests;
+  HeapTrc, Classes, consoletestrunner,
+  MasterMind.Evaluator.Tests,
+  MasterMind.Controller.Tests;
 
 type
 

@@ -33,6 +33,7 @@ type
     ['{E5412473-10EB-4B5F-B0A7-88C66FEE6A1A}']
     procedure NewGame;
     function GetCodeToBeGuessed: TMasterMindCode;
+    procedure TakeGuess(const Guess: TMasterMindCode);
     property CodeToBeGuessed: TMasterMindCode read GetCodeToBeGuessed;
   end;
 
@@ -40,6 +41,8 @@ type
     ['{C188DF5F-1B9D-423C-8619-FA00C617B601}']
     procedure StartRequestGuess(const PreviousGuesses: TPreviousGuesses);
     procedure ShowGuesses(const PreviousGuesses: TPreviousGuesses);
+    procedure ShowPlayerWinsMessage(const PreviousGuesses: TPreviousGuesses);
+    procedure ShowPlayerLosesMessage(const PreviousGuesses: TPreviousGuesses);
   end;
 
 implementation

@@ -12,7 +12,6 @@ type
   private
     FEvaluator: IGuessEvaluator;
     procedure CheckResultsEqual(const Expected, Actual: TGuessEvaluationResult);
-    function MakeResult(const Hints: array of TMasterMindHint): TGuessEvaluationResult;
     procedure CheckEvaluation(const LeftCode, RightCode: array of TMasterMindCodeColor; const ExpectedResult: array of TMasterMindHint);
   protected
     procedure Setup; override;
@@ -37,14 +36,6 @@ end;
 procedure TTestMasterMindGuessEvaluator.CheckResultsEqual(const Expected, Actual: TGuessEvaluationResult);
 begin
   TEnumHelper<TMasterMindHint>.CheckArraysEqual(Expected, Actual);
-end;
-
-function TTestMasterMindGuessEvaluator.MakeResult(const Hints: array of TMasterMindHint): TGuessEvaluationResult;
-var
-  I: Integer;
-begin
-  for I := Low(Result) to High(Result) do
-    Result[I] := Hints[I];
 end;
 
 procedure TTestMasterMindGuessEvaluator.CheckEvaluation(const LeftCode, RightCode: array of TMasterMindCodeColor; const ExpectedResult: array of TMasterMindHint);
