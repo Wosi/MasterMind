@@ -1,17 +1,18 @@
 unit MasterMind.Evaluator.Tests;
 
-{$mode objfpc}{$H+}
+{$IFDEF FPC}{$MODE DELPHI}{$ENDIF}
 
 interface
 
 uses
-  Classes, SysUtils, fpcunit, testutils, testregistry, MasterMind.API;
+  Classes, SysUtils, fpcunit, testregistry, MasterMind.API;
 
 type
   TTestMasterMindGuessEvaluator = class(TTestCase)
   private
     FEvaluator: IGuessEvaluator;
     procedure CheckResultsEqual(const Expected, Actual: TMasterMindGuessEvaluationResult);
+    function EvaluationResultToString(const EvaluationResult: TMasterMindGuessEvaluationResult): String;
     function MakeResult(const Hints: array of TMasterMindHint): TMasterMindGuessEvaluationResult;
     function MakeCode(const Colors: array of TMasterMindCodeColor): TMasterMindCode;
     procedure CheckEvaluation(const LeftCode, RightCode: array of TMasterMindCodeColor; const ExpectedResult: array of TMasterMindHint);
@@ -21,18 +22,19 @@ type
     procedure TestExactMatch;
     procedure TestNoMatch;
     procedure TestAllColorsAtWrongPlace;
+    procedure TestFirstColorAtWrongPlaceAndSecondColorCorrect;
+    procedure TestDuplicateColorsInGuessAreRewaredOnlyOneTimeForEachColorInTheCodeToBeGuessed;
   end;
 
 implementation
 
 uses
-  MasterMind.Evaluator;
+  MasterMind.Evaluator, EnumHelper;
 
 procedure TTestMasterMindGuessEvaluator.Setup;
 begin
   FEvaluator := TMasterMindGuessEvaluator.Create;
 end;
-
 
 procedure TTestMasterMindGuessEvaluator.CheckResultsEqual(const Expected, Actual: TMasterMindGuessEvaluationResult);
 var
@@ -40,7 +42,24 @@ var
 begin
   for I := Low(Expected) to High(Expected) do
     if not (Expected[I] = Actual[I]) then
-      Fail('Results do not match');
+      Fail('Results do not match. Expected: ' + EvaluationResultToString(Expected) + ' but was: ' + EvaluationResultToString(Actual));
+end;
+
+function TTestMasterMindGuessEvaluator.EvaluationResultToString(const EvaluationResult: TMasterMindGuessEvaluationResult): String;
+var
+  ElementList, ElementString: String;
+  Element: TMasterMindHint;
+begin
+  ElementList := '';
+  for Element in EvaluationResult do
+  begin
+    if ElementList <> '' then
+      ElementList := ElementList + ', ';
+    ElementString :=  TEnumHelper<TMasterMindHint>.EnumToStr(Element);
+    ElementList := ElementList + ElementString;
+  end;
+
+  Result := '[' + ElementList + ']';
 end;
 
 function TTestMasterMindGuessEvaluator.MakeResult(const Hints: array of TMasterMindHint): TMasterMindGuessEvaluationResult;
@@ -92,6 +111,24 @@ begin
     [mmcGreen, mmcYellow, mmcOrange, mmcRed],
     [mmcYellow, mmcOrange, mmcRed, mmcGreen],
     [mmhWrongPlace, mmhWrongPlace, mmhWrongPlace, mmhWrongPlace]
+  );
+end;
+
+procedure TTestMasterMindGuessEvaluator.TestFirstColorAtWrongPlaceAndSecondColorCorrect;
+begin
+  CheckEvaluation(
+    [mmcGreen, mmcYellow, mmcOrange, mmcRed],
+    [mmcOrange, mmcYellow, mmcBrown, mmcBrown],
+    [mmhCorrect, mmhWrongPlace, mmhNoMatch, mmhNoMatch]
+  );
+end;
+
+procedure TTestMasterMindGuessEvaluator.TestDuplicateColorsInGuessAreRewaredOnlyOneTimeForEachColorInTheCodeToBeGuessed;
+begin
+  CheckEvaluation(
+    [mmcGreen, mmcGreen, mmcRed, mmcRed],
+    [mmcGreen, mmcGreen, mmcGreen, mmcRed],
+    [mmhCorrect, mmhCorrect, mmhCorrect, mmhNoMatch]
   );
 end;
 
