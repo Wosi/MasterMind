@@ -37,6 +37,7 @@ IGameViewMock = interface
     procedure SetOnShowPlayerWins(const Value: TPreviousGuessesProc);
     procedure ShowPlayerLosesMessage(const PreviousGuesses: TPreviousGuesses);
     procedure SetOnShowPlayerLoses(const Value: TPreviousGuessesProc);
+    procedure Start;
   end;
 
 implementation
@@ -79,6 +80,11 @@ end;
 procedure TMasterMindViewMock.SetOnShowPlayerLoses(const Value: TPreviousGuessesProc);
 begin
   FOnShowPlayerLoses := Value;
+end;
+
+procedure TMasterMindViewMock.Start;
+begin
+
 end;
 
 end.

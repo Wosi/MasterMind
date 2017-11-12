@@ -19,7 +19,7 @@ type
     procedure AddGuess(const EvaluatedGuess: TEvaluatedGuess);
     procedure EvaluateGuess(const Guess: TMasterMindCode);
     function GuessWasCorrect: Boolean;
-    procedure EndGameIfNecassary;
+    procedure RequestNextGuessOrEndGameIfNecassary;
   public
     constructor Create(const CodeSelector: ICodeSelector; const Evaluator: IGuessEvaluator; const View: IGameView);
     procedure NewGame;
@@ -59,7 +59,7 @@ procedure TMasterMindController.TakeGuess(const Guess: TMasterMindCode);
 begin
   EvaluateGuess(Guess);
   FView.ShowGuesses(FPreviousGuesses);
-  EndGameIfNecassary;
+  RequestNextGuessOrEndGameIfNecassary;
 end;
 
 procedure TMasterMindController.AddGuess(const EvaluatedGuess: TEvaluatedGuess);
@@ -77,12 +77,14 @@ begin
   AddGuess(EvaluatedGuess);
 end;
 
-procedure TMasterMindController.EndGameIfNecassary;
+procedure TMasterMindController.RequestNextGuessOrEndGameIfNecassary;
 begin
   if GuessWasCorrect then
     FView.ShowPlayerWinsMessage(FPreviousGuesses)
   else if Length(FPreviousGuesses) = MAX_GUESSES then
-    FView.ShowPlayerLosesMessage(FPreviousGuesses);
+    FView.ShowPlayerLosesMessage(FPreviousGuesses)
+  else
+    FView.StartRequestGuess(FPreviousGuesses);
 end;
 
 function TMasterMindController.GuessWasCorrect: Boolean;

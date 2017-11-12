@@ -7,7 +7,7 @@ const
   MAX_GUESSES = 12;
 
 type
-  TMasterMindCodeColor = (mmcGreen, mmcYellow, mmcOrange, mmcRed, mmcBlue, mmcBrown);
+  TMasterMindCodeColor = (mmcGreen, mmcYellow, mmcOrange, mmcRed, mmcWhite, mmcBrown);
   TMasterMindCode = array[0..CODE_SIZE - 1] of TMasterMindCodeColor;
   TMasterMindHint = (mmhNoMatch, mmhWrongPlace, mmhCorrect);
   TGuessEvaluationResult = array[0..CODE_SIZE - 1] of TMasterMindHint;
@@ -39,6 +39,7 @@ type
 
   IGameView = interface
     ['{C188DF5F-1B9D-423C-8619-FA00C617B601}']
+    procedure Start;
     procedure StartRequestGuess(const PreviousGuesses: TPreviousGuesses);
     procedure ShowGuesses(const PreviousGuesses: TPreviousGuesses);
     procedure ShowPlayerWinsMessage(const PreviousGuesses: TPreviousGuesses);
