@@ -10,7 +10,7 @@ uses
 type
   TPreviousGuessesProc = procedure(const PreviousGuesses: TPreviousGuesses) of object;
 
-IGameViewMock = interface
+  IGameViewMock = interface
     ['{E6FBEA3B-01F7-41AA-8BA4-A374323C39A5}']
     procedure SetOnStartRequestGuess(const Value: TPreviousGuessesProc);
     procedure SetOnShowGuesses(const Value: TPreviousGuessesProc);
