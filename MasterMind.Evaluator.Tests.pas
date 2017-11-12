@@ -14,7 +14,6 @@ type
     procedure CheckResultsEqual(const Expected, Actual: TGuessEvaluationResult);
     function EvaluationResultToString(const EvaluationResult: TGuessEvaluationResult): String;
     function MakeResult(const Hints: array of TMasterMindHint): TGuessEvaluationResult;
-    function MakeCode(const Colors: array of TMasterMindCodeColor): TMasterMindCode;
     procedure CheckEvaluation(const LeftCode, RightCode: array of TMasterMindCodeColor; const ExpectedResult: array of TMasterMindHint);
   protected
     procedure Setup; override;
@@ -29,7 +28,7 @@ type
 implementation
 
 uses
-  MasterMind.Evaluator, EnumHelper;
+  MasterMind.Evaluator, EnumHelper, MasterMind.TestHelper;
 
 procedure TTestMasterMindGuessEvaluator.Setup;
 begin
@@ -68,14 +67,6 @@ var
 begin
   for I := Low(Result) to High(Result) do
     Result[I] := Hints[I];
-end;
-
-function TTestMasterMindGuessEvaluator.MakeCode(const Colors: array of TMasterMindCodeColor): TMasterMindCode;
-var
-  I: Integer;
-begin
-  for I := Low(Result) to High(Result) do
-    Result[I] := Colors[I];
 end;
 
 procedure TTestMasterMindGuessEvaluator.CheckEvaluation(const LeftCode, RightCode: array of TMasterMindCodeColor; const ExpectedResult: array of TMasterMindHint);
