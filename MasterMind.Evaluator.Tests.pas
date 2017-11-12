@@ -12,7 +12,6 @@ type
   private
     FEvaluator: IGuessEvaluator;
     procedure CheckResultsEqual(const Expected, Actual: TGuessEvaluationResult);
-    function EvaluationResultToString(const EvaluationResult: TGuessEvaluationResult): String;
     function MakeResult(const Hints: array of TMasterMindHint): TGuessEvaluationResult;
     procedure CheckEvaluation(const LeftCode, RightCode: array of TMasterMindCodeColor; const ExpectedResult: array of TMasterMindHint);
   protected
@@ -36,29 +35,8 @@ begin
 end;
 
 procedure TTestMasterMindGuessEvaluator.CheckResultsEqual(const Expected, Actual: TGuessEvaluationResult);
-var
-  I: Integer;
 begin
-  for I := Low(Expected) to High(Expected) do
-    if not (Expected[I] = Actual[I]) then
-      Fail('Results do not match. Expected: ' + EvaluationResultToString(Expected) + ' but was: ' + EvaluationResultToString(Actual));
-end;
-
-function TTestMasterMindGuessEvaluator.EvaluationResultToString(const EvaluationResult: TGuessEvaluationResult): String;
-var
-  ElementList, ElementString: String;
-  Element: TMasterMindHint;
-begin
-  ElementList := '';
-  for Element in EvaluationResult do
-  begin
-    if ElementList <> '' then
-      ElementList := ElementList + ', ';
-    ElementString :=  TEnumHelper<TMasterMindHint>.EnumToStr(Element);
-    ElementList := ElementList + ElementString;
-  end;
-
-  Result := '[' + ElementList + ']';
+  TEnumHelper<TMasterMindHint>.CheckArraysEqual(Expected, Actual);
 end;
 
 function TTestMasterMindGuessEvaluator.MakeResult(const Hints: array of TMasterMindHint): TGuessEvaluationResult;
