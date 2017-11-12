@@ -11,9 +11,9 @@ type
   TTestMasterMindGuessEvaluator = class(TTestCase)
   private
     FEvaluator: IGuessEvaluator;
-    procedure CheckResultsEqual(const Expected, Actual: TMasterMindGuessEvaluationResult);
-    function EvaluationResultToString(const EvaluationResult: TMasterMindGuessEvaluationResult): String;
-    function MakeResult(const Hints: array of TMasterMindHint): TMasterMindGuessEvaluationResult;
+    procedure CheckResultsEqual(const Expected, Actual: TGuessEvaluationResult);
+    function EvaluationResultToString(const EvaluationResult: TGuessEvaluationResult): String;
+    function MakeResult(const Hints: array of TMasterMindHint): TGuessEvaluationResult;
     function MakeCode(const Colors: array of TMasterMindCodeColor): TMasterMindCode;
     procedure CheckEvaluation(const LeftCode, RightCode: array of TMasterMindCodeColor; const ExpectedResult: array of TMasterMindHint);
   protected
@@ -36,7 +36,7 @@ begin
   FEvaluator := TMasterMindGuessEvaluator.Create;
 end;
 
-procedure TTestMasterMindGuessEvaluator.CheckResultsEqual(const Expected, Actual: TMasterMindGuessEvaluationResult);
+procedure TTestMasterMindGuessEvaluator.CheckResultsEqual(const Expected, Actual: TGuessEvaluationResult);
 var
   I: Integer;
 begin
@@ -45,7 +45,7 @@ begin
       Fail('Results do not match. Expected: ' + EvaluationResultToString(Expected) + ' but was: ' + EvaluationResultToString(Actual));
 end;
 
-function TTestMasterMindGuessEvaluator.EvaluationResultToString(const EvaluationResult: TMasterMindGuessEvaluationResult): String;
+function TTestMasterMindGuessEvaluator.EvaluationResultToString(const EvaluationResult: TGuessEvaluationResult): String;
 var
   ElementList, ElementString: String;
   Element: TMasterMindHint;
@@ -62,7 +62,7 @@ begin
   Result := '[' + ElementList + ']';
 end;
 
-function TTestMasterMindGuessEvaluator.MakeResult(const Hints: array of TMasterMindHint): TMasterMindGuessEvaluationResult;
+function TTestMasterMindGuessEvaluator.MakeResult(const Hints: array of TMasterMindHint): TGuessEvaluationResult;
 var
   I: Integer;
 begin
@@ -80,7 +80,7 @@ end;
 
 procedure TTestMasterMindGuessEvaluator.CheckEvaluation(const LeftCode, RightCode: array of TMasterMindCodeColor; const ExpectedResult: array of TMasterMindHint);
 var
-  Expected, Actual: TMasterMindGuessEvaluationResult;
+  Expected, Actual: TGuessEvaluationResult;
 begin
   Actual := FEvaluator.EvaluateGuess(MakeCode(LeftCode), MakeCode(RightCode));
   Expected := MakeResult(ExpectedResult);

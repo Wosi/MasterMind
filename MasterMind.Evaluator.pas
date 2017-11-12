@@ -16,21 +16,21 @@ type
       const CurrentPosition, GuessPosition: Integer): Boolean;
     function ColorCorrectAtPosition(const Guess, CodeToBeGuessed: TMasterMindCode; const Position: Integer): Boolean;
     function ColorCorrectAtAnyPosition(const Guess, CodeToBeGuessed: TMasterMindCode; const Positions: array of Integer): Boolean;
-    procedure InitializeResultWithNoMatches(out EvaluationResult: TMasterMindGuessEvaluationResult);
-    procedure SetCorrectMatchesInResult(var EvaluationResult: TMasterMindGuessEvaluationResult; const CodeToBeGuessed, Guess: TMasterMindCode);
-    procedure SetWrongPlacesInResult(var EvaluationResult: TMasterMindGuessEvaluationResult; const CodeToBeGuessed, Guess: TMasterMindCode);
-    procedure SortResult(var EvaluationResult: TMasterMindGuessEvaluationResult);
-    function CountExactMatches(const EvaluationResult: TMasterMindGuessEvaluationResult): Integer;
-    function CountWrongPlaces(const EvaluationResult: TMasterMindGuessEvaluationResult): Integer;
-    function CountElements(const EvaluationResult: TMasterMindGuessEvaluationResult; const HintType: TMasterMindHint): Integer;
-    procedure SetMatchesAndWrongPlaces(var EvaluationResult: TMasterMindGuessEvaluationResult; const Matches, WrongPlaces: Integer);
+    procedure InitializeResultWithNoMatches(out EvaluationResult: TGuessEvaluationResult);
+    procedure SetCorrectMatchesInResult(var EvaluationResult: TGuessEvaluationResult; const CodeToBeGuessed, Guess: TMasterMindCode);
+    procedure SetWrongPlacesInResult(var EvaluationResult: TGuessEvaluationResult; const CodeToBeGuessed, Guess: TMasterMindCode);
+    procedure SortResult(var EvaluationResult: TGuessEvaluationResult);
+    function CountExactMatches(const EvaluationResult: TGuessEvaluationResult): Integer;
+    function CountWrongPlaces(const EvaluationResult: TGuessEvaluationResult): Integer;
+    function CountElements(const EvaluationResult: TGuessEvaluationResult; const HintType: TMasterMindHint): Integer;
+    procedure SetMatchesAndWrongPlaces(var EvaluationResult: TGuessEvaluationResult; const Matches, WrongPlaces: Integer);
   public
-    function EvaluateGuess(const CodeToBeGuessed, Guess: TMasterMindCode): TMasterMindGuessEvaluationResult;
+    function EvaluateGuess(const CodeToBeGuessed, Guess: TMasterMindCode): TGuessEvaluationResult;
   end;
 
 implementation
 
-function TMasterMindGuessEvaluator.EvaluateGuess(const CodeToBeGuessed, Guess: TMasterMindCode): TMasterMindGuessEvaluationResult;
+function TMasterMindGuessEvaluator.EvaluateGuess(const CodeToBeGuessed, Guess: TMasterMindCode): TGuessEvaluationResult;
 begin
   InitializeResultWithNoMatches(Result);
   SetCorrectMatchesInResult(Result, CodeToBeGuessed, Guess);
@@ -38,7 +38,7 @@ begin
   SortResult(Result);
 end;
 
-procedure TMasterMindGuessEvaluator.InitializeResultWithNoMatches(out EvaluationResult: TMasterMindGuessEvaluationResult);
+procedure TMasterMindGuessEvaluator.InitializeResultWithNoMatches(out EvaluationResult: TGuessEvaluationResult);
 var
   I: Integer;
 begin
@@ -46,7 +46,7 @@ begin
     EvaluationResult[I] := mmhNoMatch;
 end;
 
-procedure TMasterMindGuessEvaluator.SetCorrectMatchesInResult(var EvaluationResult: TMasterMindGuessEvaluationResult;
+procedure TMasterMindGuessEvaluator.SetCorrectMatchesInResult(var EvaluationResult: TGuessEvaluationResult;
   const CodeToBeGuessed, Guess: TMasterMindCode);
 var
   I: Integer;
@@ -56,7 +56,7 @@ begin
       EvaluationResult[I] := mmhCorrect;
 end;
 
-procedure TMasterMindGuessEvaluator.SetWrongPlacesInResult(var EvaluationResult: TMasterMindGuessEvaluationResult;
+procedure TMasterMindGuessEvaluator.SetWrongPlacesInResult(var EvaluationResult: TGuessEvaluationResult;
   const CodeToBeGuessed, Guess: TMasterMindCode);
 var
   I: Integer;
@@ -101,7 +101,7 @@ begin
   Result := CodeToBeGuessed[Position] = Guess[Position];
 end;
 
-procedure TMasterMindGuessEvaluator.SortResult(var EvaluationResult: TMasterMindGuessEvaluationResult);
+procedure TMasterMindGuessEvaluator.SortResult(var EvaluationResult: TGuessEvaluationResult);
 var
   Matches, WrongPlaces: Integer;
 begin
@@ -111,7 +111,7 @@ begin
   SetMatchesAndWrongPlaces(EvaluationResult, Matches, WrongPlaces);
 end;
 
-procedure TMasterMindGuessEvaluator.SetMatchesAndWrongPlaces(var EvaluationResult: TMasterMindGuessEvaluationResult; const Matches, WrongPlaces: Integer);
+procedure TMasterMindGuessEvaluator.SetMatchesAndWrongPlaces(var EvaluationResult: TGuessEvaluationResult; const Matches, WrongPlaces: Integer);
 var
   I: Integer;
 begin
@@ -122,17 +122,17 @@ begin
     EvaluationResult[Matches + I] := mmhWrongPlace;
 end;
 
-function TMasterMindGuessEvaluator.CountExactMatches(const EvaluationResult: TMasterMindGuessEvaluationResult): Integer;
+function TMasterMindGuessEvaluator.CountExactMatches(const EvaluationResult: TGuessEvaluationResult): Integer;
 begin
   Result := CountElements(EvaluationResult, mmhCorrect);
 end;
 
-function TMasterMindGuessEvaluator.CountWrongPlaces(const EvaluationResult: TMasterMindGuessEvaluationResult): Integer;
+function TMasterMindGuessEvaluator.CountWrongPlaces(const EvaluationResult: TGuessEvaluationResult): Integer;
 begin
   Result := CountElements(EvaluationResult, mmhWrongPlace);
 end;
 
-function TMasterMindGuessEvaluator.CountElements(const EvaluationResult: TMasterMindGuessEvaluationResult; const HintType: TMasterMindHint): Integer;
+function TMasterMindGuessEvaluator.CountElements(const EvaluationResult: TGuessEvaluationResult; const HintType: TMasterMindHint): Integer;
 var
   I: Integer;
 begin
