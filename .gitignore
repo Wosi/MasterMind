@@ -1,0 +1,9 @@
+*.exe
+*.lps
+*.res
+*.ppu
+*.o
+*.or
+CompileOmniPascalServerProject.bat
+tasks.json
+lib/
