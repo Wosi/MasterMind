@@ -1,0 +1,19 @@
+object FormMasterMind: TFormMasterMind
+  Left = 256
+  Height = 650
+  Top = 132
+  Width = 487
+  Caption = 'FormMasterMind'
+  ClientHeight = 650
+  ClientWidth = 487
+  OnCreate = FormCreate
+  LCLVersion = '1.6.4.0'
+  object pnlBoard: TPanel
+    Left = 0
+    Height = 554
+    Top = 96
+    Width = 378
+    Caption = ''
+    TabOrder = 0
+  end
+end
