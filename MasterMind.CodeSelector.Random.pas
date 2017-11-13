@@ -7,6 +7,8 @@ uses
 
 type
   TMasterMindRandomCodeSelector = class(TInterfacedObject, ICodeSelector)
+  private
+    function GetNumberOfAvailableColors: Integer;
   public
     function SelectNewCode: TMasterMindCode;
   end;
@@ -19,7 +21,14 @@ var
 begin
   Randomize;
   for I := Low(TMasterMindCode) to High(TMasterMindCode) do
-    Result[I] := TMasterMindCodeColor(Random(Length(TMasterMindCode)));
+    Result[I] := TMasterMindCodeColor(Random(GetNumberOfAvailableColors));
+end;
+
+function TMasterMindRandomCodeSelector.GetNumberOfAvailableColors: Integer;
+var
+  Colors: array[TMasterMindCodeColor] of Byte;
+begin
+  Result := Length(Colors);
 end;
 
 end.
