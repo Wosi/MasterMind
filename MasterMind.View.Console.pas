@@ -130,12 +130,14 @@ begin
 end;
 
 function TMasterMindConsoleView.GetColorForHint(const Hint: TMasterMindHint): Integer;
+const
+  COLORS: array[TMasterMindHint] of Integer = (
+    DarkGray,
+    LightGray,
+    White
+  );
 begin
-  case Hint of
-    mmhCorrect: Result := DarkGray;
-    mmhWrongPlace: Result := LightGray;
-    mmhNoMatch: Result := White;
-  end;
+  Result := COLORS[Hint];
 end;
 
 function TMasterMindConsoleView.GetCharForHint(const Hint: TMasterMindHint): Char;
@@ -165,15 +167,17 @@ begin
 end;
 
 function TMasterMindConsoleView.CodeColorToTextColor(const Color: TMasterMindCodeColor): Integer;
+const
+  COLORS: array[TMasterMindCodeColor] of Integer = (
+    Green,
+    Yellow,
+    LightRed,
+    Red,
+    White,
+    Brown
+  );
 begin
-  case Color of
-    mmcGreen: Result := Green;
-    mmcYellow: Result := Yellow;
-    mmcOrange: Result := LightRed;
-    mmcRed: Result := Red;
-    mmcWhite: Result := White;
-    mmcBrown: Result := Brown;
-  end;
+  Result := COLORS[Color];
 end;
 
 procedure TMasterMindConsoleView.AskToStartNewGame;
