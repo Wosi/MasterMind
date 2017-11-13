@@ -94,6 +94,10 @@ end;
 procedure TMasterMindConsoleView.ShowPlayerLosesMessage(const PreviousGuesses: TPreviousGuesses);
 begin
   WriteLn(Output, 'You lose!');
+  WriteLn(Output);
+  Write('Searched code was: ');
+  WriteCode(FController.CodeToBeGuessed);
+  WriteLn(Output);
   AskToStartNewGame;
 end;
 
