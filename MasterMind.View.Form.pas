@@ -9,6 +9,7 @@ uses
 
 type
   TBoardRow = record
+    Panel: TPanel;
     Colors: array[0..CODE_SIZE - 1] of TShape;
     Hints: array[0..CODE_SIZE - 1] of TShape;
   end;
@@ -20,6 +21,7 @@ type
     btnCommitGuess: TButton;
     FController: IGameController;
     FBoardRows: array[0..MAX_GUESSES - 1] of TBoardRow;
+    FCurrentInputRow: Integer;
     procedure CreateBoard;
     function CreateRowPanel(const RowIndex: Integer): TPanel;
     procedure AddShapesToRowPanel(const RowPanel: TPanel; const RowIndex: Integer);
@@ -27,24 +29,33 @@ type
     procedure AddHintShapes(const RowPanel: TPanel; const RowIndex: Integer);
     procedure AddCodeShape(const CodeColorIndex, RowIndex: Integer; const RowPanel: TPanel);
     procedure AddHintShape(const HintIndex, RowIndex: Integer; const RowPanel: TPanel);
-    procedure ColorShapeClick(Sender: TObject);
+    procedure ColorShapeClick(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     function GetNextColor(const CodeShape: TShape): TColor;
     procedure CreateStartGameButton;
     procedure BtnNewGameClick(Sender: TObject);
     procedure BtnCommitGuessClick(Sender: TObject);
     procedure CreateBtnCommitGuess;
     function TryGetPlayersGuess(out Guess: TMasterMindCode): Boolean;
+    function TryGetCodeColorFromShape(out Color: TMasterMindCodeColor; const ColorIndex: Integer): Boolean;
     procedure EnableGuessInput(const CurrentGuessIndex: Integer);
-    procedure EnableRow(const RowIndex: Integer; const Enable: Boolean);
+    procedure DisableGuessInput;
+    procedure PaintEvaluatedGuess(const PreviousGuesses: TEvaluatedGuess; const RowIndex: Integer);
+    procedure ResetBoardRow(const RowIndex: Integer);
   private
     const
-      COLOR_MAPPING: array[TMasterMindCodeColor] of TColor = (
+      CODE_COLOR_MAPPING: array[TMasterMindCodeColor] of TColor = (
         clGreen,
         clYellow,
         clBlue,
         clRed,
         clWhite,
         clMaroon
+      );
+
+      HINT_COLOR_MAPPING: array[TMasterMindHint] of TColor = (
+        clBlack,
+        clWhite,
+        clRed
       );
   public
     procedure Start;
@@ -66,6 +77,7 @@ begin
   CreateBoard;
   CreateStartGameButton;
   CreateBtnCommitGuess;
+  Start;
 end;
 
 procedure TFormMasterMind.CreateBoard;
@@ -85,6 +97,7 @@ begin
   Result.Width := pnlBoard.Width;
   Result.Height := ROW_HEIGHT;
   Result.Top := pnlBoard.Height - ((RowIndex + 1) * ROW_HEIGHT);
+  FBoardRows[RowIndex].Panel := Result;
   AddShapesToRowPanel(Result, RowIndex);
 end;
 
@@ -118,7 +131,9 @@ begin
   Shape.Top := (RowPanel.Height - CODE_SHAPE_SIZE) div 2;
   Shape.Left := CODE_SHAPE_START_LEFT + (CodeColorIndex * (CODE_SHAPE_SIZE + CODE_SHAPE_SPACING));
   Shape.Brush.Color := clBlack;
-  Shape.OnClick := ColorShapeClick;
+  Shape.Tag := RowIndex;
+  Shape.OnMouseDown := ColorShapeClick;
+
   FBoardRows[RowIndex].Colors[CodeColorIndex] := Shape;
 end;
 
@@ -152,22 +167,25 @@ begin
     Shape.Top := RowMid - (HINT_SHAPE_SPACING div 2);
 
   if Odd(HintIndex) then
-    Column := 0
+    Column := 1
   else
-    Column := 1;
+    Column := 0;
 
   Shape.Left := HINT_SHAPE_START_LEFT + (Column * (HINT_SHAPE_SPACING));
   Shape.Brush.Color := clBlack;
-  FBoardRows[RowIndex].Colors[HintIndex] := Shape;
+  FBoardRows[RowIndex].Hints[HintIndex] := Shape;
 end;
 
-procedure TFormMasterMind.ColorShapeClick(Sender: TObject);
+procedure TFormMasterMind.ColorShapeClick(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 var
   Shape: TShape;
+  Guess: TMasterMindCode;
 begin
   Shape := Sender as TShape;
-  if Shape.Enabled then
+  if Shape.Tag = FCurrentInputRow then
     Shape.Brush.Color := GetNextColor(Shape);
+
+  btnCommitGuess.Enabled := TryGetPlayersGuess(Guess);
 end;
 
 function TFormMasterMind.GetNextColor(const CodeShape: TShape): TColor;
@@ -176,14 +194,14 @@ var
   Color: TColor;
 begin
   ColorFound := False;
-  for Color in COLOR_MAPPING do
+  for Color in CODE_COLOR_MAPPING do
     if ColorFound then
       Exit(Color)
     else
       if CodeShape.Brush.Color = Color then
         ColorFound := True;
 
-  Exit(COLOR_MAPPING[TMasterMindCodeColor(0)]);
+  Exit(CODE_COLOR_MAPPING[TMasterMindCodeColor(0)]);
 end;
 
 procedure TFormMasterMind.CreateStartGameButton;
@@ -223,12 +241,41 @@ begin
 end;
 
 function TFormMasterMind.TryGetPlayersGuess(out Guess: TMasterMindCode): Boolean;
+var
+  I: Integer;
 begin
-  Result := False;
+  if FCurrentInputRow < 0 then
+    Exit(False);
+
+  for I := Low(Guess) to High(Guess) do
+    if not TryGetCodeColorFromShape(Guess[I], I) then
+      Exit(False);
+
+  Exit(True);
+end;
+
+function TFormMasterMind.TryGetCodeColorFromShape(out Color: TMasterMindCodeColor; const ColorIndex: Integer): Boolean;
+var
+  Shape: TShape;
+  CurrentColor: TMasterMindCodeColor;
+begin
+  Shape := FBoardRows[FCurrentInputRow].Colors[ColorIndex];
+
+  for CurrentColor := Low(TMasterMindCodeColor) to High(TMasterMindCodeColor) do
+  begin
+    if Shape.Brush.Color = CODE_COLOR_MAPPING[CurrentColor] then
+    begin
+      Color := CurrentColor;
+      Exit(True);
+    end;
+  end;
+
+  Exit(False);
 end;
 
 procedure TFormMasterMind.Start;
 begin
+  DisableGuessInput;
   FController.NewGame;
 end;
 
@@ -241,37 +288,62 @@ begin
 end;
 
 procedure TFormMasterMind.ShowGuesses(const PreviousGuesses: TPreviousGuesses);
+var
+  I: Integer;
 begin
+  DisableGuessInput;
+  for I := Low(PreviousGuesses) to High(PreviousGuesses) do
+    PaintEvaluatedGuess(PreviousGuesses[I], I);
 
+  for I := Length(PreviousGuesses) to High(FBoardRows) do
+    ResetBoardRow(I);
+end;
+
+procedure TFormMasterMind.PaintEvaluatedGuess(const PreviousGuesses: TEvaluatedGuess; const RowIndex: Integer);
+var
+  I: Integer;
+begin
+  for I := Low(TMasterMindCode) to High(TMasterMindCode) do
+    FBoardRows[RowIndex].Hints[I].Brush.Color := HINT_COLOR_MAPPING[PreviousGuesses.GuessResult[I]];
+end;
+
+procedure TFormMasterMind.ResetBoardRow(const RowIndex: Integer);
+var
+  I: Integer;
+begin
+  for I := Low(TMasterMindCode) to High(TMasterMindCode) do
+  begin
+    FBoardRows[RowIndex].Hints[I].Brush.Color := HINT_COLOR_MAPPING[mmhNoMatch];
+    FBoardRows[RowIndex].Colors[I].Brush.Color := clBlack;
+  end;
 end;
 
 procedure TFormMasterMind.ShowPlayerWinsMessage(const PreviousGuesses: TPreviousGuesses);
 begin
-
+  ShowMessage('You win!');
 end;
 
 procedure TFormMasterMind.ShowPlayerLosesMessage(const PreviousGuesses: TPreviousGuesses);
 begin
-
+  ShowMessage('You lose!');
 end;
 
 procedure TFormMasterMind.EnableGuessInput(const CurrentGuessIndex: Integer);
 var
   I: Integer;
 begin
-  for I := Low(FBoardRows) to High(FBoardRows) - 1 do
-    EnableRow(I, I = CurrentGuessIndex);
+  FCurrentInputRow := CurrentGuessIndex;
+  for I := Low(FBoardRows) to High(FBoardRows) do
+    if I = CurrentGuessIndex then
+      FBoardRows[I].Panel.Color := clHighlight
+    else
+      FBoardRows[I].Panel.Color := clWindow;
 end;
 
-procedure TFormMasterMind.EnableRow(const RowIndex: Integer; const Enable: Boolean);
-var
-  I: Integer;
-  OnClickHandler: TNotifyEvent;
+procedure TFormMasterMind.DisableGuessInput;
 begin
-  for I := 0 to CODE_SIZE - 1 do
-    FBoardRows[RowIndex].Colors[I].Enabled := Enable;
-
-  Caption := Caption + BoolToStr(Enable);
+  FCurrentInputRow := -1;
+  btnCommitGuess.Enabled := False;
 end;
 
 {$R *.lfm}
