@@ -133,8 +133,8 @@ function TMasterMindConsoleView.GetColorForHint(const Hint: TMasterMindHint): In
 const
   COLORS: array[TMasterMindHint] of Integer = (
     DarkGray,
-    LightGray,
-    White
+    White,
+    LightRed
   );
 begin
   Result := COLORS[Hint];
