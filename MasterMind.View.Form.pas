@@ -19,7 +19,7 @@ type
     procedure FormCreate(Sender: TObject);
   private
     btnCommitGuess: TButton;
-    FController: IGameController;
+    FPresenter: IGamePresenter;
     FBoardRows: array[0..MAX_GUESSES - 1] of TBoardRow;
     FCurrentInputRow: Integer;
     FMasterRow: TBoardRow;
@@ -74,12 +74,12 @@ type
 implementation
 
 uses
-  MasterMind.ControllerFactory;
+  MasterMind.PresenterFactory;
 
 procedure TFormMasterMind.FormCreate(Sender: TObject);
 begin
   Caption := 'MasterMind';
-  FController := TMasterMindControllerFactory.CreateController(Self);
+  FPresenter := TMasterMindPresenterFactory.CreatePresenter(Self);
   CreateBoard;
   CreateStartGameButton;
   CreateBtnCommitGuess;
@@ -234,7 +234,7 @@ end;
 
 procedure TFormMasterMind.BtnNewGameClick(Sender: TObject);
 begin
-  FController.NewGame;
+  FPresenter.NewGame;
 end;
 
 procedure TFormMasterMind.CreateBtnCommitGuess;
@@ -253,7 +253,7 @@ var
   Guess: TMasterMindCode;
 begin
   if TryGetPlayersGuess(Guess) then
-    FController.TakeGuess(Guess);
+    FPresenter.TakeGuess(Guess);
 end;
 
 function TFormMasterMind.TryGetPlayersGuess(out Guess: TMasterMindCode): Boolean;
@@ -292,7 +292,7 @@ end;
 procedure TFormMasterMind.Start;
 begin
   DisableGuessInput;
-  FController.NewGame;
+  FPresenter.NewGame;
 end;
 
 procedure TFormMasterMind.StartRequestGuess(const PreviousGuesses: TPreviousGuesses);
@@ -357,7 +357,7 @@ var
   I: Integer;
 begin
   for I := Low(TMasterMindCode) to High(TMasterMindCode) do
-    FMasterRow.Colors[I].Brush.Color := CODE_COLOR_MAPPING[FController.CodeToBeGuessed[I]];
+    FMasterRow.Colors[I].Brush.Color := CODE_COLOR_MAPPING[FPresenter.CodeToBeGuessed[I]];
 end;
 
 procedure TFormMasterMind.ClearCorrectCode;

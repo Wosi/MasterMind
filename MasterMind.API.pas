@@ -29,7 +29,7 @@ type
     function SelectNewCode: TMasterMindCode;
   end;
 
-  IGameController = interface
+  IGamePresenter = interface
     ['{E5412473-10EB-4B5F-B0A7-88C66FEE6A1A}']
     procedure NewGame;
     function GetCodeToBeGuessed: TMasterMindCode;

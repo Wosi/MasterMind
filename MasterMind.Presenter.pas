@@ -1,4 +1,4 @@
-unit MasterMind.Controller;
+unit MasterMind.Presenter;
 
 {$IFDEF FPC}{$MODE DELPHI}{$ENDIF}
 
@@ -8,7 +8,7 @@ uses
   MasterMind.API;
 
 type
-  TMasterMindController = class(TInterfacedObject, IGameController)
+  TMasterMindPresenter = class(TInterfacedObject, IGamePresenter)
   private
     FCodeSelector: ICodeSelector;
     FEvaluator: IGuessEvaluator;
@@ -29,7 +29,7 @@ type
 
 implementation
 
-constructor TMasterMindController.Create(const CodeSelector: ICodeSelector; const Evaluator: IGuessEvaluator; const View: IGameView);
+constructor TMasterMindPresenter.Create(const CodeSelector: ICodeSelector; const Evaluator: IGuessEvaluator; const View: IGameView);
 begin
   inherited Create;
   FCodeSelector := CodeSelector;
@@ -37,7 +37,7 @@ begin
   FView := View;
 end;
 
-procedure TMasterMindController.NewGame;
+procedure TMasterMindPresenter.NewGame;
 begin
   ClearPreviousGuesses;
   FCodeToBeGuessed := FCodeSelector.SelectNewCode;
@@ -45,30 +45,30 @@ begin
   FView.StartRequestGuess(FPreviousGuesses);
 end;
 
-function TMasterMindController.GetCodeToBeGuessed: TMasterMindCode;
+function TMasterMindPresenter.GetCodeToBeGuessed: TMasterMindCode;
 begin
   Result := FCodeToBeGuessed;
 end;
 
-procedure TMasterMindController.ClearPreviousGuesses;
+procedure TMasterMindPresenter.ClearPreviousGuesses;
 begin
   SetLength(FPreviousGuesses, 0);
 end;
 
-procedure TMasterMindController.TakeGuess(const Guess: TMasterMindCode);
+procedure TMasterMindPresenter.TakeGuess(const Guess: TMasterMindCode);
 begin
   EvaluateGuess(Guess);
   FView.ShowGuesses(FPreviousGuesses);
   RequestNextGuessOrEndGameIfNecassary;
 end;
 
-procedure TMasterMindController.AddGuess(const EvaluatedGuess: TEvaluatedGuess);
+procedure TMasterMindPresenter.AddGuess(const EvaluatedGuess: TEvaluatedGuess);
 begin
   SetLength(FPreviousGuesses, Length(FPreviousGuesses) + 1);
   FPreviousGuesses[High(FPreviousGuesses)] := EvaluatedGuess;
 end;
 
-procedure TMasterMindController.EvaluateGuess(const Guess: TMasterMindCode);
+procedure TMasterMindPresenter.EvaluateGuess(const Guess: TMasterMindCode);
 var
   EvaluatedGuess: TEvaluatedGuess;
 begin
@@ -77,7 +77,7 @@ begin
   AddGuess(EvaluatedGuess);
 end;
 
-procedure TMasterMindController.RequestNextGuessOrEndGameIfNecassary;
+procedure TMasterMindPresenter.RequestNextGuessOrEndGameIfNecassary;
 begin
   if GuessWasCorrect then
     FView.ShowPlayerWinsMessage(FPreviousGuesses)
@@ -87,7 +87,7 @@ begin
     FView.StartRequestGuess(FPreviousGuesses);
 end;
 
-function TMasterMindController.GuessWasCorrect: Boolean;
+function TMasterMindPresenter.GuessWasCorrect: Boolean;
 var
   Hint: TMasterMindHint;
 begin

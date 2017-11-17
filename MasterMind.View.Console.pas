@@ -10,7 +10,7 @@ uses
 type
   TMasterMindConsoleView = class(TInterfacedObject, IGameView)
   private
-    FController: IGameController;
+    FPresenter: IGamePresenter;
     procedure WriteEvaluatedGuess(const PreviousGuess: TEvaluatedGuess);
     procedure WriteGuessResult(const GuessResult: TGuessEvaluationResult);
     procedure WriteHint(const Hint: TMasterMindHint);
@@ -32,17 +32,17 @@ type
 implementation
 
 uses
-  MasterMind.ControllerFactory, MasterMind.ConsoleUtils, crt;
+  MasterMind.PresenterFactory, MasterMind.ConsoleUtils, crt;
 
 constructor TMasterMindConsoleView.Create;
 begin
   inherited Create;
-  FController := TMasterMindControllerFactory.CreateController(Self);
+  FPresenter := TMasterMindPresenterFactory.CreatePresenter(Self);
 end;
 
 procedure TMasterMindConsoleView.Start;
 begin
-  FController.NewGame;
+  FPresenter.NewGame;
 end;
 
 procedure TMasterMindConsoleView.StartRequestGuess(const PreviousGuesses: TPreviousGuesses);
@@ -74,7 +74,7 @@ begin
     ReadLn(Input, CodeString);
   until TryStringToCode(CodeString, Code);
 
-  FController.TakeGuess(Code);
+  FPresenter.TakeGuess(Code);
 end;
 
 procedure TMasterMindConsoleView.ShowGuesses(const PreviousGuesses: TPreviousGuesses);
@@ -96,7 +96,7 @@ begin
   WriteLn(Output, 'You lose!');
   WriteLn(Output);
   Write('Searched code was: ');
-  WriteCode(FController.CodeToBeGuessed);
+  WriteCode(FPresenter.CodeToBeGuessed);
   WriteLn(Output);
   AskToStartNewGame;
 end;
@@ -190,9 +190,9 @@ begin
   until (Chr = 'y') or (Chr = 'n');
 
   if Chr = 'y' then
-    FController.NewGame
+    FPresenter.NewGame
   else
-    FController := Nil;
+    FPresenter := Nil;
 end;
 
 end.

@@ -1,4 +1,4 @@
-unit MasterMind.Controller.Tests;
+unit MasterMind.Presenter.Tests;
 
 {$IFDEF FPC}{$MODE DELPHI}{$ENDIF}
 
@@ -8,9 +8,9 @@ uses
   Classes, SysUtils, fpcunit, testregistry, MasterMind.API, MasterMind.View.Mock, MasterMind.Evaluator.Mock;
 
 type
-  TTestMasterMindController = class(TTestCase)
+  TTestMasterMindPresenter = class(TTestCase)
   private
-    FController: IGameController;
+    FPresenter: IGamePresenter;
     FViewMock: IGameViewMock;
     FShowGuessesCallCounter: Integer;
     FStartRequestGuessCallCounter: Integer;
@@ -44,9 +44,9 @@ type
 implementation
 
 uses
-  MasterMind.Controller, MasterMind.CodeSelector.Mock, MasterMind.TestHelper, EnumHelper;
+  MasterMind.Presenter, MasterMind.CodeSelector.Mock, MasterMind.TestHelper, EnumHelper;
 
-procedure TTestMasterMindController.Setup;
+procedure TTestMasterMindPresenter.Setup;
 var
   CodeSelector: ICodeSelector;
   View: IGameView;
@@ -57,119 +57,119 @@ begin
   FEvaluatorMock := Evaluator as IGuessEvaluatorMock;
   View := TMasterMindViewMock.Create;
   FViewMock := View as IGameViewMock;
-  FController := TMasterMindController.Create(CodeSelector, Evaluator, View);
+  FPresenter := TMasterMindPresenter.Create(CodeSelector, Evaluator, View);
 end;
 
-procedure TTestMasterMindController.CheckShowGuessesIsCalledWithEmptyPreviousGuesses(const PreviousGuesses: TPreviousGuesses);
+procedure TTestMasterMindPresenter.CheckShowGuessesIsCalledWithEmptyPreviousGuesses(const PreviousGuesses: TPreviousGuesses);
 begin
   Inc(FShowGuessesCallCounter);
   CheckPreviousGuessesIsEmpty(PreviousGuesses);
 end;
 
-procedure TTestMasterMindController.CheckStartRequestGuessIsCalledWithEmptyPreviousGuesses(const PreviousGuesses: TPreviousGuesses);
+procedure TTestMasterMindPresenter.CheckStartRequestGuessIsCalledWithEmptyPreviousGuesses(const PreviousGuesses: TPreviousGuesses);
 begin
   Inc(FStartRequestGuessCallCounter);
   CheckPreviousGuessesIsEmpty(PreviousGuesses);
 end;
 
-procedure TTestMasterMindController.CheckStartRequestGuessIsCalledWithPreviousGuess(const PreviousGuesses: TPreviousGuesses);
+procedure TTestMasterMindPresenter.CheckStartRequestGuessIsCalledWithPreviousGuess(const PreviousGuesses: TPreviousGuesses);
 begin
   Inc(FStartRequestGuessCallCounter);
   CheckShowGuessesIsCalledWithOnePreviousGuessHavingTheGuessedCodeAndTheEvaluatorsResult(PreviousGuesses);
 end;
 
-procedure TTestMasterMindController.CheckPreviousGuessesIsEmpty(const PreviousGuesses: TPreviousGuesses);
+procedure TTestMasterMindPresenter.CheckPreviousGuessesIsEmpty(const PreviousGuesses: TPreviousGuesses);
 begin
   CheckEquals(0, Length(PreviousGuesses), 'Expected previous guesses to be empty!');
 end;
 
-procedure TTestMasterMindController.NoOperation(const PreviousGuesses: TPreviousGuesses);
+procedure TTestMasterMindPresenter.NoOperation(const PreviousGuesses: TPreviousGuesses);
 begin
   // Nop
 end;
 
-procedure TTestMasterMindController.CheckShowGuessWasCalledNTimes(const N: Integer);
+procedure TTestMasterMindPresenter.CheckShowGuessWasCalledNTimes(const N: Integer);
 begin
   CheckEquals(N, FShowGuessesCallCounter, 'View.ShowGuesses has not been called');
 end;
 
-procedure TTestMasterMindController.CheckShowGuessWasCalledOneTime;
+procedure TTestMasterMindPresenter.CheckShowGuessWasCalledOneTime;
 begin
   CheckShowGuessWasCalledNTimes(1);
 end;
 
-procedure TTestMasterMindController.CheckShowPlayerWinsCalledOneTime;
+procedure TTestMasterMindPresenter.CheckShowPlayerWinsCalledOneTime;
 begin
   CheckEquals(1, FShowPlayerWinsCallCounter, 'View.ShowPlayerWins has not been called');
 end;
 
-procedure TTestMasterMindController.CheckShowPlayerLosesCalledOneTime;
+procedure TTestMasterMindPresenter.CheckShowPlayerLosesCalledOneTime;
 begin
   CheckEquals(1, FShowPlayerLosesCallCounter, 'View.ShowPlayerLoses has not been called');
 end;
 
-procedure TTestMasterMindController.CheckStartRequestGuessWasCalledOneTime;
+procedure TTestMasterMindPresenter.CheckStartRequestGuessWasCalledOneTime;
 begin
   CheckEquals(1, FStartRequestGuessCallCounter, 'View.StartRequestGuess has not been called');
 end;
 
-procedure TTestMasterMindController.CheckShowGuessesIsCalledWithOnePreviousGuessHavingTheGuessedCodeAndTheEvaluatorsResult(const PreviousGuesses: TPreviousGuesses);
+procedure TTestMasterMindPresenter.CheckShowGuessesIsCalledWithOnePreviousGuessHavingTheGuessedCodeAndTheEvaluatorsResult(const PreviousGuesses: TPreviousGuesses);
 begin
   Inc(FShowGuessesCallCounter);
   CheckOnePreviousGuessHavingTheGuessedCodeAndTheEvaluatorsResult(PreviousGuesses, 'ShowGuesses');
 end;
 
-procedure TTestMasterMindController.CheckShowPlayerWinsIsCalledWithOnePreviousGuessHavingTheGuessedCodeAndTheEvaluatorsResult(const PreviousGuesses: TPreviousGuesses);
+procedure TTestMasterMindPresenter.CheckShowPlayerWinsIsCalledWithOnePreviousGuessHavingTheGuessedCodeAndTheEvaluatorsResult(const PreviousGuesses: TPreviousGuesses);
 begin
   Inc(FShowPlayerWinsCallCounter);
   CheckOnePreviousGuessHavingTheGuessedCodeAndTheEvaluatorsResult(PreviousGuesses, 'ShowPlayerWins');
 end;
 
-procedure TTestMasterMindController.CheckShowPlayerLosesIsCalledWithTwelvePreviousGuesses(const PreviousGuesses: TPreviousGuesses);
+procedure TTestMasterMindPresenter.CheckShowPlayerLosesIsCalledWithTwelvePreviousGuesses(const PreviousGuesses: TPreviousGuesses);
 begin
   Inc(FShowPlayerLosesCallCounter);
   CheckEquals(12, Length(PreviousGuesses));
 end;
 
-procedure TTestMasterMindController.CheckOnePreviousGuessHavingTheGuessedCodeAndTheEvaluatorsResult(const PreviousGuesses: TPreviousGuesses; const MethodName: String);
+procedure TTestMasterMindPresenter.CheckOnePreviousGuessHavingTheGuessedCodeAndTheEvaluatorsResult(const PreviousGuesses: TPreviousGuesses; const MethodName: String);
 begin
   CheckEquals(1, Length(PreviousGuesses), MethodName +' called with PreviousGuesses having wrong length');
   TEnumHelper<TMasterMindCodeColor>.CheckArraysEqual(FCurrentlyGuessedCode, PreviousGuesses[0].GuessedCode);
   TEnumHelper<TMasterMindHint>.CheckArraysEqual(FEvaluatorMock.EvaluationResult, PreviousGuesses[0].GuessResult)
 end;
 
-procedure TTestMasterMindController.TestNewGameClearsTheBoardAndSelectsANewCodeAndStartsRequestNewGuess;
+procedure TTestMasterMindPresenter.TestNewGameClearsTheBoardAndSelectsANewCodeAndStartsRequestNewGuess;
 begin
   FViewMock.OnShowGuesses := CheckShowGuessesIsCalledWithEmptyPreviousGuesses;
   FViewMock.OnStartRequestGuess := CheckStartRequestGuessIsCalledWithEmptyPreviousGuesses;
-  FController.NewGame;
+  FPresenter.NewGame;
   CheckShowGuessWasCalledOneTime;
-  TEnumHelper<TMasterMindCodeColor>.CheckArraysEqual([mmcGreen, mmcGreen, mmcRed, mmcRed], FController.CodeToBeGuessed);
+  TEnumHelper<TMasterMindCodeColor>.CheckArraysEqual([mmcGreen, mmcGreen, mmcRed, mmcRed], FPresenter.CodeToBeGuessed);
 end;
 
-procedure TTestMasterMindController.TestTakeGuessEvaluatesAndAddsWrongGuessToTheVisibleBoard;
+procedure TTestMasterMindPresenter.TestTakeGuessEvaluatesAndAddsWrongGuessToTheVisibleBoard;
 begin
   FEvaluatorMock.EvaluationResult := MakeResult([mmhCorrect, mmhWrongPlace, mmhNoMatch, mmhNoMatch]);
   FCurrentlyGuessedCode := MakeCode([mmcRed, mmcRed, mmcRed, mmcRed]);
   FViewMock.OnShowGuesses := CheckShowGuessesIsCalledWithOnePreviousGuessHavingTheGuessedCodeAndTheEvaluatorsResult;
   FViewMock.OnStartRequestGuess := CheckStartRequestGuessIsCalledWithPreviousGuess;
-  FController.TakeGuess(FCurrentlyGuessedCode);
+  FPresenter.TakeGuess(FCurrentlyGuessedCode);
   CheckShowGuessWasCalledNTimes(2);
   CheckStartRequestGuessWasCalledOneTime;
 end;
 
-procedure TTestMasterMindController.TestTakeGuessCallsShowPlayerWinsMessageWhenGuessWasCorrect;
+procedure TTestMasterMindPresenter.TestTakeGuessCallsShowPlayerWinsMessageWhenGuessWasCorrect;
 begin
   FEvaluatorMock.EvaluationResult := MakeResult([mmhCorrect, mmhCorrect, mmhCorrect, mmhCorrect]);
   FCurrentlyGuessedCode := MakeCode([mmcRed, mmcRed, mmcRed, mmcRed]);
   FViewMock.OnShowGuesses := CheckShowGuessesIsCalledWithOnePreviousGuessHavingTheGuessedCodeAndTheEvaluatorsResult;
   FViewMock.OnShowPlayerWins := CheckShowPlayerWinsIsCalledWithOnePreviousGuessHavingTheGuessedCodeAndTheEvaluatorsResult;
-  FController.TakeGuess(FCurrentlyGuessedCode);
+  FPresenter.TakeGuess(FCurrentlyGuessedCode);
   CheckShowGuessWasCalledOneTime;
   CheckShowPlayerWinsCalledOneTime;
 end;
 
-procedure TTestMasterMindController.TestTakeTwelveWrongGuessesCallsShowPlayerLosesMessage;
+procedure TTestMasterMindPresenter.TestTakeTwelveWrongGuessesCallsShowPlayerLosesMessage;
 var
   I: Integer;
 begin
@@ -178,12 +178,12 @@ begin
   FViewMock.OnShowGuesses := NoOperation;
   FViewMock.OnShowPlayerLoses := CheckShowPlayerLosesIsCalledWithTwelvePreviousGuesses;
   for I := 0 to 12 - 1 do
-    FController.TakeGuess(MakeCode([mmcGreen, mmcGreen, mmcGreen, mmcGreen]));
+    FPresenter.TakeGuess(MakeCode([mmcGreen, mmcGreen, mmcGreen, mmcGreen]));
 
   CheckShowPlayerLosesCalledOneTime;
 end;
 
 initialization
-  RegisterTest(TTestMasterMindController);
+  RegisterTest(TTestMasterMindPresenter);
 
 end.
