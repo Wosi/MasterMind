@@ -22,12 +22,13 @@ type
     FController: IGameController;
     FBoardRows: array[0..MAX_GUESSES - 1] of TBoardRow;
     FCurrentInputRow: Integer;
+    FMasterRow: TBoardRow;
     procedure CreateBoard;
     function CreateRowPanel(const RowIndex: Integer): TPanel;
     procedure AddShapesToRowPanel(const RowPanel: TPanel; const RowIndex: Integer);
-    procedure AddCodeShapes(const RowPanel: TPanel; const RowIndex: Integer);
+    procedure AddCodeShapes(const RowPanel: TPanel; var BoardRow: TBoardRow; const RowIndex: Integer);
     procedure AddHintShapes(const RowPanel: TPanel; const RowIndex: Integer);
-    procedure AddCodeShape(const CodeColorIndex, RowIndex: Integer; const RowPanel: TPanel);
+    function CreateCodeShape(const CodeColorIndex, RowIndex: Integer; const RowPanel: TPanel): TShape;
     procedure AddHintShape(const HintIndex, RowIndex: Integer; const RowPanel: TPanel);
     procedure ColorShapeClick(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     function GetNextColor(const CodeShape: TShape): TColor;
@@ -41,6 +42,11 @@ type
     procedure DisableGuessInput;
     procedure PaintEvaluatedGuess(const PreviousGuesses: TEvaluatedGuess; const RowIndex: Integer);
     procedure ResetBoardRow(const RowIndex: Integer);
+    procedure CreateRows;
+    procedure CreateMasterCodeRow;
+    procedure EndGame(const EndMessage: String);
+    procedure ShowCorrectCode;
+    procedure ClearCorrectCode;
   private
     const
       CODE_COLOR_MAPPING: array[TMasterMindCodeColor] of TColor = (
@@ -81,11 +87,21 @@ begin
 end;
 
 procedure TFormMasterMind.CreateBoard;
+begin
+  CreateRows;
+  CreateMasterCodeRow;
+end;
+
+
+procedure TFormMasterMind.CreateRows;
 var
   I: Integer;
 begin
   for I := Low(FBoardRows) to High(FBoardRows) do
-    CreateRowPanel(I);
+  begin
+    FBoardRows[I].Panel := CreateRowPanel(I);
+    AddShapesToRowPanel(FBoardRows[I].Panel, I);
+  end;
 end;
 
 function TFormMasterMind.CreateRowPanel(const RowIndex: Integer): TPanel;
@@ -97,44 +113,38 @@ begin
   Result.Width := pnlBoard.Width;
   Result.Height := ROW_HEIGHT;
   Result.Top := pnlBoard.Height - ((RowIndex + 1) * ROW_HEIGHT);
-  FBoardRows[RowIndex].Panel := Result;
-  AddShapesToRowPanel(Result, RowIndex);
 end;
 
 procedure TFormMasterMind.AddShapesToRowPanel(const RowPanel: TPanel; const RowIndex: Integer);
 begin
-  AddCodeShapes(RowPanel, RowIndex);
+  AddCodeShapes(RowPanel, FBoardRows[RowIndex], RowIndex);
   AddHintShapes(RowPanel, RowIndex);
 end;
 
-procedure TFormMasterMind.AddCodeShapes(const RowPanel: TPanel; const RowIndex: Integer);
+procedure TFormMasterMind.AddCodeShapes(const RowPanel: TPanel; var BoardRow: TBoardRow; const RowIndex: Integer);
 var
   I: Integer;
 begin
   for I := 0 to CODE_SIZE - 1 do
-    AddCodeShape(I, RowIndex, RowPanel);
+    BoardRow.Colors[I] := CreateCodeShape(I, RowIndex, RowPanel);
 end;
 
-procedure TFormMasterMind.AddCodeShape(const CodeColorIndex, RowIndex: Integer; const RowPanel: TPanel);
+function TFormMasterMind.CreateCodeShape(const CodeColorIndex, RowIndex: Integer; const RowPanel: TPanel): TShape;
 const
   CODE_SHAPE_START_LEFT = 150;
   CODE_SHAPE_SPACING = 20;
   CODE_SHAPE_SIZE = 20;
-var
-  Shape: TShape;
 begin
-  Shape := TShape.Create(RowPanel);
-  Shape.Parent := RowPanel;
-  Shape.Shape := stCircle;
-  Shape.Width := CODE_SHAPE_SIZE;
-  Shape.Height := CODE_SHAPE_SIZE;
-  Shape.Top := (RowPanel.Height - CODE_SHAPE_SIZE) div 2;
-  Shape.Left := CODE_SHAPE_START_LEFT + (CodeColorIndex * (CODE_SHAPE_SIZE + CODE_SHAPE_SPACING));
-  Shape.Brush.Color := clBlack;
-  Shape.Tag := RowIndex;
-  Shape.OnMouseDown := ColorShapeClick;
-
-  FBoardRows[RowIndex].Colors[CodeColorIndex] := Shape;
+  Result := TShape.Create(RowPanel);
+  Result.Parent := RowPanel;
+  Result.Shape := stCircle;
+  Result.Width := CODE_SHAPE_SIZE;
+  Result.Height := CODE_SHAPE_SIZE;
+  Result.Top := (RowPanel.Height - CODE_SHAPE_SIZE) div 2;
+  Result.Left := CODE_SHAPE_START_LEFT + (CodeColorIndex * (CODE_SHAPE_SIZE + CODE_SHAPE_SPACING));
+  Result.Brush.Color := clBlack;
+  Result.Tag := RowIndex;
+  Result.OnMouseDown := ColorShapeClick;
 end;
 
 procedure TFormMasterMind.AddHintShapes(const RowPanel: TPanel; const RowIndex: Integer);
@@ -174,6 +184,12 @@ begin
   Shape.Left := HINT_SHAPE_START_LEFT + (Column * (HINT_SHAPE_SPACING));
   Shape.Brush.Color := clBlack;
   FBoardRows[RowIndex].Hints[HintIndex] := Shape;
+end;
+
+procedure TFormMasterMind.CreateMasterCodeRow;
+begin
+  FMasterRow.Panel := CreateRowPanel(MAX_GUESSES);
+  AddCodeShapes(FMasterRow.Panel, FMasterRow, MAX_GUESSES);
 end;
 
 procedure TFormMasterMind.ColorShapeClick(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
@@ -292,6 +308,8 @@ var
   I: Integer;
 begin
   DisableGuessInput;
+  ClearCorrectCode;
+
   for I := Low(PreviousGuesses) to High(PreviousGuesses) do
     PaintEvaluatedGuess(PreviousGuesses[I], I);
 
@@ -320,12 +338,34 @@ end;
 
 procedure TFormMasterMind.ShowPlayerWinsMessage(const PreviousGuesses: TPreviousGuesses);
 begin
-  ShowMessage('You win!');
+  EndGame('You win!');
 end;
 
 procedure TFormMasterMind.ShowPlayerLosesMessage(const PreviousGuesses: TPreviousGuesses);
 begin
-  ShowMessage('You lose!');
+  EndGame('You lose!');
+end;
+
+procedure TFormMasterMind.EndGame(const EndMessage: String);
+begin
+  ShowCorrectCode;
+  ShowMessage(EndMessage);
+end;
+
+procedure TFormMasterMind.ShowCorrectCode;
+var
+  I: Integer;
+begin
+  for I := Low(TMasterMindCode) to High(TMasterMindCode) do
+    FMasterRow.Colors[I].Brush.Color := CODE_COLOR_MAPPING[FController.CodeToBeGuessed[I]];
+end;
+
+procedure TFormMasterMind.ClearCorrectCode;
+var
+  I: Integer;
+begin
+  for I := Low(TMasterMindCode) to High(TMasterMindCode) do
+    FMasterRow.Colors[I].Brush.Color := clBlack;
 end;
 
 procedure TFormMasterMind.EnableGuessInput(const CurrentGuessIndex: Integer);
