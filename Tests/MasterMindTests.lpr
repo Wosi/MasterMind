@@ -5,7 +5,7 @@ program MasterMindTests;
 uses
   HeapTrc, Classes, consoletestrunner,
   MasterMind.Evaluator.Tests,
-  MasterMind.Controller.Tests,
+  MasterMind.Presenter.Tests,
   MasterMind.ConsoleUtils.Tests;
 
 type

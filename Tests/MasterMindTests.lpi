@@ -50,6 +50,7 @@
     <PathDelim Value="\"/>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
+      <OtherUnitFiles Value="../Core;../Console"/>
     </SearchPaths>
   </CompilerOptions>
   <Debugging>
